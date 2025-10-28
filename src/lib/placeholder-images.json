@@ -1,0 +1,10 @@
+{
+  "placeholderImages": [
+    {
+      "id": "initial-land",
+      "description": "Satellite view of empty land before user upload",
+      "imageUrl": "https://images.unsplash.com/photo-1574786198374-9461cb650c23?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8c2F0ZWxsaXRlJTIwdmlldyUyMGxhbmR8ZW58MHx8fHwxNzYxNTg1MzMzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "satellite view land"
+    }
+  ]
+}
