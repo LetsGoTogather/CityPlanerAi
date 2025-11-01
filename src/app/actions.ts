@@ -114,7 +114,7 @@ export async function getOptimizedZones(
 
 
 export async function generatePlanAndSimulate(
-  terrainSummary: string,
+  terrainSummaryInput: string,
   cityParams: CityParams
 ): Promise<FullReport> {
   // We are calling the mock data function directly to ensure the app works without real AI calls.
@@ -129,7 +129,7 @@ export async function generatePlanAndSimulate(
     // You could optionally throw here or fallback to mock data
     // throw new Error("AI not reachable");
   }
-  const terrainSummary = await summarizeTerrainAnalysis({ terrainAnalysis: "text", satelliteImageDataUri: imageData });
+  const terrainSummary = await summarizeTerrainAnalysis({ terrainAnalysis: terrainSummaryInput, satelliteImageDataUri: imageData });
   const zoneDistribution = await optimizeZoneDistribution({ terrainAnalysis: terrainSummary, population, budget });
   const cityPlan = await generateCityPlan({ population, budget, zoneDistribution, terrainAnalysis: terrainSummary });
   const simulation = await simulateTrafficAndPollution({ cityPlan });
