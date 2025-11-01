@@ -120,14 +120,17 @@ export async function generatePlanAndSimulate(
   // We are calling the mock data function directly to ensure the app works without real AI calls.
   // This makes the app stable for Vercel deployment.
   try {
-    // 🔍 Ping test before running anything
-    await ai.prompt({ prompt: "ping" });
-    console.log("✅ Connected to Gemini 2.5 Flash");
-    console.log("Generating MOCK city plan with parameters:", cityParams);
+    // Use Genkit's built-in generate() call
+    const result = await ai.generate({
+      model: "googleai/gemini-2.5-flash",
+      prompt: "ping",
+    });
+
+    console.log("✅ Gemini connected:", result.outputText ?? "(no text)");
+    return true;
   } catch (err: any) {
-    console.error("❌ Gemini connection error:", err.message);
-    // You could optionally throw here or fallback to mock data
-    // throw new Error("AI not reachable");
+    console.error("❌ Gemini connection failed:", err.message);
+    return false;
   }
   const terrainSummary = await summarizeTerrainAnalysis({ terrainAnalysis: terrainSummaryInput, satelliteImageDataUri: imageData });
   const zoneDistribution = await optimizeZoneDistribution({ terrainAnalysis: terrainSummary, population, budget });
