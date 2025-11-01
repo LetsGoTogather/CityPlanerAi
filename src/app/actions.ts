@@ -120,7 +120,7 @@ export async function generatePlanAndSimulate(
   // We are calling the mock data function directly to ensure the app works without real AI calls.
   // This makes the app stable for Vercel deployment.
   console.log("Generating MOCK city plan with parameters:", cityParams);
-    try {
+  try {
     // 🔍 Ping test before running anything
     await ai.prompt({ prompt: "ping" });
     console.log("✅ Connected to Gemini 2.5 Flash");
