@@ -8,15 +8,16 @@ export const ai = genkit({
 
 // Optional: quick connection test
 try {
-  // Use Genkit's built-in generate() call
   const result = await ai.generate({
     model: "googleai/gemini-2.5-flash",
     prompt: "ping",
   });
 
   console.log("✅ Gemini connected:", result.outputText ?? "(no text)");
-  return true;
-} catch (err: any) {
-  console.error("❌ Gemini connection failed:", err.message);
-  return false;
+} catch (err) {
+  if (err instanceof Error) {
+    console.error("❌ Gemini connection failed:", err.message);
+  } else {
+    console.error("❌ Gemini connection failed:", err);
+  }
 }
