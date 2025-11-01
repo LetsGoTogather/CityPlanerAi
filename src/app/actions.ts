@@ -120,6 +120,15 @@ export async function generatePlanAndSimulate(
   // We are calling the mock data function directly to ensure the app works without real AI calls.
   // This makes the app stable for Vercel deployment.
   console.log("Generating MOCK city plan with parameters:", cityParams);
+    try {
+    // 🔍 Ping test before running anything
+    await ai.prompt({ prompt: "ping" });
+    console.log("✅ Connected to Gemini 2.5 Flash");
+  } catch (err: any) {
+    console.error("❌ Gemini connection error:", err.message);
+    // You could optionally throw here or fallback to mock data
+    // throw new Error("AI not reachable");
+  }
   const terrainSummary = await summarizeTerrainAnalysis({ terrainAnalysis: "text", satelliteImageDataUri: imageData });
   const zoneDistribution = await optimizeZoneDistribution({ terrainAnalysis: terrainSummary, population, budget });
   const cityPlan = await generateCityPlan({ population, budget, zoneDistribution, terrainAnalysis: terrainSummary });
