@@ -134,6 +134,6 @@ export async function generatePlanAndSimulate(
   await new Promise(resolve => setTimeout(resolve, 60000));
   const simulation = await simulateTrafficAndPollution({cityPlan:JSON.stringify( cityPlan )});
   console.log("simulation done");
-  console.log("Generated MOCK city plan", { cityPlan, simulation });
+  console.log("Generated MOCK city plan", typeof cityPlan , typeof simulation , { cityPlan, simulation });
   return { cityPlan, simulation };
 }
