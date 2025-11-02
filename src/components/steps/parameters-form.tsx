@@ -54,10 +54,19 @@ const ParametersForm: React.FC<ParametersFormProps> = ({ terrainSummary, onParam
   };
 
   const handleZoneChange = (zone: keyof ZoneDistribution, value: number[]) => {
-    setParams(p => ({
-      ...p,
-      zoneDistribution: { ...p.zoneDistribution, [zone]: value[0] },
-    }));
+    setParams(prev => {
+      const newValue = value[0];
+      const newZoneDist = { ...prev.zoneDistribution, [zone]: newValue };
+      const total = Object.values(newZoneDist).reduce((a, b) => a + b, 0);
+  
+      // ✅ Clamp total to 100%
+      if (total > 100) {
+        const overflow = total - 100;
+        newZoneDist[zone] = Math.max(0, newValue - overflow);
+      }
+  
+      return { ...prev, zoneDistribution: newZoneDist };
+    });
   };
 
   const handleSpecialReqChange = (req: keyof CityParams['specialRequirements'], value: boolean) => {
