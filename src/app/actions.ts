@@ -135,5 +135,5 @@ export async function generatePlanAndSimulate(
   const simulation = await simulateTrafficAndPollution({cityPlan:JSON.stringify( cityPlan )});
   console.log("simulation done");
   console.log("Generated MOCK city plan", typeof cityPlan , typeof simulation , { cityPlan, simulation });
-  return { cityPlan, simulation };
+  return { cityPlan, simulation, cityParams, mapData: cityPlan.mapData || cityPlan.roadNetwork || null};
 }
