@@ -133,6 +133,6 @@ export async function generatePlanAndSimulate(
   console.log("City plan being sent to AI:", JSON.stringify(cityPlan).slice(0, 1000));
   const simulation = await simulateTrafficAndPollution({cityPlan:JSON.stringify( cityPlan )});
   console.log("simulation done");
-  return { cityPlan, simulation };
   console.log("Generated MOCK city plan", { cityPlan, simulation });
+  return { cityPlan, simulation };
 }
