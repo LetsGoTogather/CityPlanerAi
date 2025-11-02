@@ -179,7 +179,7 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
 
   return (
     <div className="w-full">
-      <div className="relative w-full aspect-[4/3] max-w-[800px] mx-auto">
+      <div className="relative w-full max-w-[800px] mx-auto">
         <canvas ref={canvasRef} className="rounded-lg border bg-muted" />
       </div>
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 text-xs">
