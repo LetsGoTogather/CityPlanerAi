@@ -68,7 +68,7 @@ export const GenerateCityPlanInputSchema = z.object({
     population: z.number(),
     budget: z.number(),
     zoneDistribution: z.string(),
-    specialRequirements: z.string(),
+    specialRequirements: z.string().default(''),
 });
 export type GenerateCityPlanInput = z.infer<typeof GenerateCityPlanInputSchema>;
 
