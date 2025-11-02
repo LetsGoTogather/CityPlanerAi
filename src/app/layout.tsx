@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'CityWise AI',
+  title: 'CityPlanner AI',
   description: 'AI-powered Urban Planning System',
 };
 
