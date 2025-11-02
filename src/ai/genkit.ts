@@ -3,13 +3,13 @@ import { googleAI } from "@genkit-ai/google-genai";
 
 export const ai = genkit({
   providers: [googleAI()],
-  defaultModel: "gemini-2.5-flash",
+  defaultModel: "googleai/gemini-1.5-flash",
 });
 
 export async function testAIConnection(): Promise<boolean> {
   try {
     const result = await ai.generate({
-      model: "gemini-2.5-flash",
+      model: "googleai/gemini-1.5-flash",
       prompt: "ping",
     });
 
