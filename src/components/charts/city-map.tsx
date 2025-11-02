@@ -131,43 +131,50 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!mapData || !canvas) return;
-    
+  
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    // Set canvas dimensions based on container
+  
     const container = canvas.parentElement;
     if (!container) return;
-
+  
     const size = Math.min(container.clientWidth, 800);
-    const aspectRatio = 3/4;
-    canvas.width = size;
-    canvas.height = size * aspectRatio;
-
-    const width = canvas.width;
-    const height = canvas.height;
-
-    ctx.clearRect(0, 0, width, height);
-    
+    let aspectRatio = 3 / 4; // default fallback
+  
     if (satelliteImage) {
       const img = new Image();
       img.onload = () => {
+        aspectRatio = img.height / img.width;
+        canvas.width = size;
+        canvas.height = size * aspectRatio;
+  
+        const width = canvas.width;
+        const height = canvas.height;
+  
+        ctx.clearRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
         drawMapElements(ctx, width, height);
       };
       img.onerror = () => {
-        // If image fails, draw on a plain background
+        // fallback if image fails
+        canvas.width = size;
+        canvas.height = size * aspectRatio;
         ctx.fillStyle = 'hsl(var(--muted))';
-        ctx.fillRect(0, 0, width, height);
-        drawMapElements(ctx, width, height);
-      }
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawMapElements(ctx, canvas.width, canvas.height);
+      };
       img.src = satelliteImage;
-    } else {
-      ctx.fillStyle = 'hsl(var(--muted))';
-      ctx.fillRect(0, 0, width, height);
-      drawMapElements(ctx, width, height);
+      return;
     }
+  
+    // If no satellite image
+    canvas.width = size;
+    canvas.height = size * aspectRatio;
+    ctx.fillStyle = 'hsl(var(--muted))';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawMapElements(ctx, canvas.width, canvas.height);
   }, [mapData, satelliteImage]);
+
 
 
   return (
