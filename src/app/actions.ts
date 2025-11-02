@@ -123,8 +123,8 @@ export async function generatePlanAndSimulate(
   const { population, budget } = cityParams;
   console.log("Generating MOCK city plan with parameters:", cityParams);
   const terrainSummary = await summarizeTerrainAnalysis({ terrainAnalysis: terrainSummaryInput, satelliteImageDataUri: imageData });
-  const zoneDistribution = await optimizeZoneDistribution({ terrainAnalysis: terrainSummary, population, budget });
-  const cityPlan = await generateCityPlan({ population, budget, zoneDistribution, terrainAnalysis: terrainSummary });
+  const zoneDistribution = await optimizeZoneDistribution({ terrainAnalysis: terrainSummary.summary, population, budget });
+  const cityPlan = await generateCityPlan({ population, budget, zoneDistribution, terrainAnalysis: terrainSummary.summary });
   const simulation = await simulateTrafficAndPollution({ cityPlan });
   return { cityPlan, simulation };
   console.log("Generated MOCK city plan", { cityPlan, simulation });
