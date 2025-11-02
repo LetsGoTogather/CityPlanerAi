@@ -191,7 +191,7 @@ const Page: FC = () => {
         {renderContent()}
       </main>
       <footer className="py-4 text-center text-sm text-muted-foreground">
-        <p>Powered by CityWise AI</p>
+        <p>Powered by CityPlanner AI</p>
       </footer>
     </div>
   );
