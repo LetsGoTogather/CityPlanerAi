@@ -110,7 +110,7 @@ const Page: FC = () => {
         setError(null);
         setFullReport(null);
         setStep(3); // Move to "generating" step immediately
-        const result = await generatePlanAndSimulate(terrainSummary, params);
+        const result = await generatePlanAndSimulate(terrainSummary, params,imageData);
         if(!result || !result.mapData || !result.cityPlan){
            // This error is more specific and helps in debugging
            throw new Error("The generation process returned an incomplete plan. The AI might be having trouble.");
