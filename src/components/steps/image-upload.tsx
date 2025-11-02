@@ -77,7 +77,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageProcessed, isProcessin
               alt={uploadedImage ? "Uploaded Land" : placeholderImage!.description}
               width={1200}
               height={800}
-              className="object-contain w-auto h-auto max-w-full max-h-[70vh]"
+              className="object-contain w-auto h-full"
               data-ai-hint={placeholderImage?.imageHint}
             />
           ) : (
