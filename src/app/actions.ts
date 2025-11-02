@@ -128,7 +128,7 @@ export async function generatePlanAndSimulate(
                                            zoneDistribution: JSON.stringify(zoneDistribution.zoneDistribution || zoneDistribution), 
                                            terrainAnalysis: terrainSummary.summary,
                                            specialRequirements: JSON.stringify(specialRequirements)});
-  const simulation = await simulateTrafficAndPollution({ cityPlan });
+  const simulation = await simulateTrafficAndPollution(JSON.stringify( cityPlan ));
   return { cityPlan, simulation };
   console.log("Generated MOCK city plan", { cityPlan, simulation });
 }
