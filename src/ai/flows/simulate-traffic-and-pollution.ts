@@ -38,6 +38,7 @@ const simulateTrafficAndPollutionFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await simulateTrafficAndPollutionPrompt(input);
+    console.log("RAW:", JSON.stringify(output, null, 2));
     return output!;
   }
 );
