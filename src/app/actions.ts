@@ -120,14 +120,14 @@ export async function generatePlanAndSimulate(
 ): Promise<FullReport> {
   // We are calling the mock data function directly to ensure the app works without real AI calls.
   // This makes the app stable for Vercel deployment.
-  const { population, budget } = cityParams;
+  const { population, budget, specialRequirements } = cityParams;
   console.log("Generating MOCK city plan with parameters:", cityParams);
   const terrainSummary = await summarizeTerrainAnalysis({ terrainAnalysis: terrainSummaryInput, satelliteImageDataUri: imageData });
   const zoneDistribution = await optimizeZoneDistribution({ terrainAnalysis: terrainSummary.summary, population, budget });
   const cityPlan = await generateCityPlan({ population, budget,
                                            zoneDistribution: JSON.stringify(zoneDistribution.zoneDistribution || zoneDistribution), 
                                            terrainAnalysis: terrainSummary.summary,
-                                           specialRequirements: JSON.stringify(specialRequirements)});
+                                           specialRequirements: specialRequirements});
   const simulation = await simulateTrafficAndPollution({ cityPlan });
   return { cityPlan, simulation };
   console.log("Generated MOCK city plan", { cityPlan, simulation });
