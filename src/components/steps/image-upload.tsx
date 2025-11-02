@@ -70,14 +70,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageProcessed, isProcessin
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="aspect-video w-full rounded-lg overflow-hidden border-2 border-dashed border-border flex items-center justify-center bg-muted/50">
+        <div className="w-full rounded-lg overflow-hidden border-2 border-dashed border-border flex items-center justify-center bg-muted/50">
           {uploadedImage || placeholderImage ? (
             <Image
               src={uploadedImage || placeholderImage!.imageUrl}
               alt={uploadedImage ? "Uploaded Land" : placeholderImage!.description}
               width={1200}
               height={800}
-              className="object-cover w-full h-full"
+              className="object-contain w-auto h-auto max-w-full max-h-[70vh]"
               data-ai-hint={placeholderImage?.imageHint}
             />
           ) : (
