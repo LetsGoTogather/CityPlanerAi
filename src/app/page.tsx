@@ -104,12 +104,13 @@ const Page: FC = () => {
       });
       return;
     }
-
+    
+    setStep(3);  //generate loading screen before the process
+    setError(null);
+    setFullReport(null);
+    
     startTransition(async () => {
       try {
-        setError(null);
-        setFullReport(null);
-        setStep(3); // Move to "generating" step immediately
         const result = await generatePlanAndSimulate(terrainSummary, params,imageData);
         if(!result || !result.mapData || !result.cityPlan){
            // This error is more specific and helps in debugging
