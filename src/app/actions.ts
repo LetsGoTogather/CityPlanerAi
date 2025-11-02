@@ -119,23 +119,11 @@ export async function generatePlanAndSimulate(
 ): Promise<FullReport> {
   // We are calling the mock data function directly to ensure the app works without real AI calls.
   // This makes the app stable for Vercel deployment.
-  try {
-    const result = await ai.generate({
-      model: "googleai/gemini-2.5-flash",
-      prompt: "ping",
-    });
-
-    console.log("✅ Gemini connected:", result.outputText ?? "(no text)");
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error("❌ Gemini connection failed:", err.message);
-    } else {
-      console.error("❌ Gemini connection failed:", err);
-    }
-  }
+  console.log("Generating MOCK city plan with parameters:", cityParams);
   const terrainSummary = await summarizeTerrainAnalysis({ terrainAnalysis: terrainSummaryInput, satelliteImageDataUri: imageData });
   const zoneDistribution = await optimizeZoneDistribution({ terrainAnalysis: terrainSummary, population, budget });
   const cityPlan = await generateCityPlan({ population, budget, zoneDistribution, terrainAnalysis: terrainSummary });
   const simulation = await simulateTrafficAndPollution({ cityPlan });
   return { cityPlan, simulation };
+  console.log("Generated MOCK city plan", { cityPlan, simulation });
 }
