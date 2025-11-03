@@ -58,12 +58,13 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const drawMapElements = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    // Your existing drawing code remains exactly the same
     // Draw zones
     mapData.zones?.forEach(zone => {
       const config = zoneConfig[zone.type];
       if (!config || !zone.coordinates || zone.coordinates.length < 2) return;
 
-      ctx.fillStyle = `${config.color}80`; // Add transparency
+      ctx.fillStyle = `${config.color}80`;
       ctx.strokeStyle = config.color;
       ctx.lineWidth = 2;
 
@@ -74,7 +75,6 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
         if (index === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       });
-      // A closed polygon has the same start and end point. If not, close it.
       if(zone.coordinates[0].toString() !== zone.coordinates[zone.coordinates.length - 1].toString()){
         ctx.closePath();
       }
@@ -131,50 +131,52 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!mapData || !canvas) return;
-    
+  
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas dimensions based on container
-    const container = canvas.parentElement;
-    if (!container) return;
+    // Get the actual rendered size from CSS
+    const renderedWidth = canvas.clientWidth;
+    const renderedHeight = canvas.clientHeight;
 
-    const size = Math.min(container.clientWidth, 800);
-    const aspectRatio = 3/4;
-    canvas.width = size;
-    canvas.height = size * aspectRatio;
+    // Set canvas internal resolution to match displayed size
+    canvas.width = renderedWidth;
+    canvas.height = renderedHeight;
 
-    const width = canvas.width;
-    const height = canvas.height;
-
-    ctx.clearRect(0, 0, width, height);
-    
     if (satelliteImage) {
       const img = new Image();
       img.onload = () => {
-        ctx.drawImage(img, 0, 0, width, height);
-        drawMapElements(ctx, width, height);
+        ctx.clearRect(0, 0, renderedWidth, renderedHeight);
+        ctx.drawImage(img, 0, 0, renderedWidth, renderedHeight);
+        drawMapElements(ctx, renderedWidth, renderedHeight);
       };
       img.onerror = () => {
-        // If image fails, draw on a plain background
+        // Fallback if image fails
         ctx.fillStyle = 'hsl(var(--muted))';
-        ctx.fillRect(0, 0, width, height);
-        drawMapElements(ctx, width, height);
-      }
+        ctx.fillRect(0, 0, renderedWidth, renderedHeight);
+        drawMapElements(ctx, renderedWidth, renderedHeight);
+      };
       img.src = satelliteImage;
-    } else {
-      ctx.fillStyle = 'hsl(var(--muted))';
-      ctx.fillRect(0, 0, width, height);
-      drawMapElements(ctx, width, height);
+      return;
     }
+  
+    // If no satellite image
+    ctx.fillStyle = 'hsl(var(--muted))';
+    ctx.fillRect(0, 0, renderedWidth, renderedHeight);
+    drawMapElements(ctx, renderedWidth, renderedHeight);
   }, [mapData, satelliteImage]);
-
 
   return (
     <div className="w-full">
-      <div className="relative w-full aspect-[4/3] max-w-[800px] mx-auto">
-        <canvas ref={canvasRef} className="rounded-lg border bg-muted" />
+      {/* CSS-only container with fixed height and centering */}
+      <div className="w-full h-[600px] rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center p-4">
+        <canvas 
+          ref={canvasRef} 
+          className="max-w-full max-h-full object-contain"
+        />
       </div>
+      
+      {/* Legend remains the same */}
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 text-xs">
          {Object.entries(zoneConfig).map(([key, { color, label }]) => (
           <div key={key} className="flex items-center gap-2">
