@@ -130,6 +130,8 @@ export async function analyzeImage(base64Image: string, terrainAnalysis: string)
     const result = await model.generateContent([prompt, imagePart]);
     const text = result.response.text().trim();
 
+    console.log(text.slice(0,1000))
+
     // Simple safeguard if model returns something invalid
     if (!text.toLowerCase().startsWith("ai analysis complete") && text !== "Error") {
       return "Error";
