@@ -70,7 +70,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageProcessed, isProcessin
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="h-[400px] rounded-lg overflow-hidden border-2 border-dashed border-border flex items-center justify-center bg-muted/50">
+        <div className="w-full h-[400px] rounded-lg overflow-hidden border-2 border-dashed border-border flex items-center justify-center bg-muted/50">
           {uploadedImage || placeholderImage ? (
             <Image
               src={uploadedImage || placeholderImage!.imageUrl}
