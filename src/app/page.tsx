@@ -65,6 +65,17 @@ const Page: FC = () => {
     startTransition(async () => {
       try {
         const aiSummary = await analyzeImage(imgData, summary);
+
+        // Check for explicit "Error" response from Gemini
+        if (aiSummary === "Error") {
+          setError("The uploaded image is not recognized as a terrain or map image.");
+          setTerrainSummary("");
+          toast({
+            variant: "destructive",
+            title: "Invalid Image",
+            description: "Please upload a valid terrain, satellite, or map image.",
+          });
+        }
         setTerrainSummary(aiSummary);
         setStep(2);
         setError(null);
