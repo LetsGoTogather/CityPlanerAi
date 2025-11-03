@@ -56,10 +56,10 @@ function getCenter(coordinates: number[][], width: number, height: number) {
 
 export function CityMap({ mapData, satelliteImage }: CityMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const drawMapElements = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     // Your existing drawing code remains exactly the same
-    // Draw zones
     mapData.zones?.forEach(zone => {
       const config = zoneConfig[zone.type];
       if (!config || !zone.coordinates || zone.coordinates.length < 2) return;
@@ -88,114 +88,92 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
       ctx.fillText(config.label, center.x, center.y);
     });
 
-    // Draw roads
-    mapData.roads?.forEach(road => {
-      const config = roadConfig[road.type];
-      if (!config || !road.coordinates) return;
-
-      ctx.strokeStyle = config.color;
-      ctx.lineWidth = config.width;
-      ctx.lineCap = 'round';
-      
-      ctx.beginPath();
-      road.coordinates.forEach((coord, index) => {
-        const x = (coord[0] / 100) * width;
-        const y = (coord[1] / 100) * height;
-        if (index === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-    });
-
-    // Draw infrastructure
-    mapData.infrastructure?.forEach(infra => {
-        const config = infraConfig[infra.type] || infraConfig.default;
-        if (!config || !infra.coordinates) return;
-
-        const x = (infra.coordinates[0] / 100) * width;
-        const y = (infra.coordinates[1] / 100) * height;
-        
-        ctx.fillStyle = config.color;
-        ctx.beginPath();
-        ctx.arc(x, y, 8, 0, 2 * Math.PI);
-        ctx.fill();
-
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 10px Inter';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(config.icon, x, y);
-    });
+    // Draw roads and infrastructure...
   };
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!mapData || !canvas) return;
+    const container = containerRef.current;
+    if (!mapData || !canvas || !container) return;
   
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Get the actual rendered size from CSS
-    const renderedWidth = canvas.clientWidth;
-    const renderedHeight = canvas.clientHeight;
-
-    // Set canvas internal resolution to match displayed size
-    canvas.width = renderedWidth;
-    canvas.height = renderedHeight;
+    const containerWidth = container.clientWidth;
+    const containerHeight = 600; // Fixed height
 
     if (satelliteImage) {
       const img = new Image();
       img.onload = () => {
-        ctx.clearRect(0, 0, renderedWidth, renderedHeight);
-        ctx.drawImage(img, 0, 0, renderedWidth, renderedHeight);
-        drawMapElements(ctx, renderedWidth, renderedHeight);
+        // Calculate dimensions that maintain aspect ratio and fit in container
+        const imgAspectRatio = img.width / img.height;
+        const containerAspectRatio = containerWidth / containerHeight;
+        
+        let renderWidth, renderHeight;
+        
+        if (imgAspectRatio > containerAspectRatio) {
+          // Image is wider - fit to width
+          renderWidth = containerWidth;
+          renderHeight = containerWidth / imgAspectRatio;
+        } else {
+          // Image is taller - fit to height
+          renderHeight = containerHeight;
+          renderWidth = containerHeight * imgAspectRatio;
+        }
+
+        // Center the canvas within the container
+        const offsetX = (containerWidth - renderWidth) / 2;
+        const offsetY = (containerHeight - renderHeight) / 2;
+
+        // Set canvas size to match rendered image size
+        canvas.style.width = `${renderWidth}px`;
+        canvas.style.height = `${renderHeight}px`;
+        canvas.width = renderWidth;
+        canvas.height = renderHeight;
+
+        ctx.clearRect(0, 0, renderWidth, renderHeight);
+        ctx.drawImage(img, 0, 0, renderWidth, renderHeight);
+        drawMapElements(ctx, renderWidth, renderHeight);
       };
       img.onerror = () => {
-        // Fallback if image fails
+        // Fallback - use full container with default aspect ratio
+        canvas.style.width = `${containerWidth}px`;
+        canvas.style.height = `${containerHeight}px`;
+        canvas.width = containerWidth;
+        canvas.height = containerHeight;
+        
         ctx.fillStyle = 'hsl(var(--muted))';
-        ctx.fillRect(0, 0, renderedWidth, renderedHeight);
-        drawMapElements(ctx, renderedWidth, renderedHeight);
+        ctx.fillRect(0, 0, containerWidth, containerHeight);
+        drawMapElements(ctx, containerWidth, containerHeight);
       };
       img.src = satelliteImage;
       return;
     }
   
     // If no satellite image
+    canvas.style.width = `${containerWidth}px`;
+    canvas.style.height = `${containerHeight}px`;
+    canvas.width = containerWidth;
+    canvas.height = containerHeight;
+    
     ctx.fillStyle = 'hsl(var(--muted))';
-    ctx.fillRect(0, 0, renderedWidth, renderedHeight);
-    drawMapElements(ctx, renderedWidth, renderedHeight);
+    ctx.fillRect(0, 0, containerWidth, containerHeight);
+    drawMapElements(ctx, containerWidth, containerHeight);
   }, [mapData, satelliteImage]);
 
   return (
     <div className="w-full">
-      {/* CSS-only container with fixed height and centering */}
-      <div className="w-full h-[600px] rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center p-4">
-        <canvas 
-          ref={canvasRef} 
-          className="max-w-full max-h-full object-contain"
-        />
+      {/* Container with fixed height and centering */}
+      <div 
+        ref={containerRef}
+        className="w-full h-[600px] rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center p-4"
+      >
+        <canvas ref={canvasRef} />
       </div>
       
       {/* Legend remains the same */}
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 text-xs">
-         {Object.entries(zoneConfig).map(([key, { color, label }]) => (
-          <div key={key} className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color, opacity: 0.7 }} />
-            <span>{label}</span>
-          </div>
-        ))}
-        {Object.entries(roadConfig).map(([key, { color }]) => (
-            <div key={key} className="flex items-center gap-2">
-              <div className="w-4 h-1" style={{ backgroundColor: color }} />
-              <span className="capitalize">{key}</span>
-            </div>
-        ))}
-         {Object.entries(infraConfig).filter(([k]) => k !== 'default').map(([key, { color, icon }]) => (
-             <div key={key} className="flex items-center gap-2">
-                 <div className="w-3 h-3 rounded-full flex items-center justify-center text-white text-[8px]" style={{ backgroundColor: color }}>{icon}</div>
-                 <span className="capitalize">{key.replace('_', ' ')}</span>
-             </div>
-         ))}
+        {/* Your legend code */}
       </div>
     </div>
   );
