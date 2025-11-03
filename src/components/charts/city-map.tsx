@@ -56,6 +56,7 @@ function getCenter(coordinates: number[][], width: number, height: number) {
 
 export function CityMap({ mapData, satelliteImage }: CityMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const drawMapElements = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     // Draw zones
@@ -129,49 +130,87 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!mapData || !canvas) return;
+    const container = containerRef.current;
+    if (!mapData || !canvas || !container) return;
   
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Get the actual rendered size from CSS
-    const renderedWidth = canvas.clientWidth;
-    const renderedHeight = canvas.clientHeight;
-
-    // Set canvas internal resolution to match displayed size
-    canvas.width = renderedWidth;
-    canvas.height = renderedHeight;
+    // Available space accounting for padding (p-4 = 16px each side)
+    const availableWidth = container.clientWidth;
+    const maxHeight = 600;
 
     if (satelliteImage) {
       const img = new Image();
       img.onload = () => {
-        ctx.clearRect(0, 0, renderedWidth, renderedHeight);
-        ctx.drawImage(img, 0, 0, renderedWidth, renderedHeight);
-        drawMapElements(ctx, renderedWidth, renderedHeight);
+        // Calculate dimensions that fit within available space while maintaining aspect ratio
+        const imgAspectRatio = img.height / img.width;
+        let renderWidth = availableWidth;
+        let renderHeight = availableWidth * imgAspectRatio;
+
+        // If calculated height exceeds max, scale down
+        if (renderHeight > maxHeight) {
+          renderHeight = maxHeight;
+          renderWidth = maxHeight / imgAspectRatio;
+        }
+
+        // Set canvas size
+        canvas.width = renderWidth;
+        canvas.height = renderHeight;
+
+        // Clear and draw
+        ctx.clearRect(0, 0, renderWidth, renderHeight);
+        ctx.drawImage(img, 0, 0, renderWidth, renderHeight);
+        drawMapElements(ctx, renderWidth, renderHeight);
       };
       img.onerror = () => {
+        // Fallback with default aspect ratio
+        const defaultAspectRatio = 3/4;
+        let renderWidth = availableWidth;
+        let renderHeight = availableWidth * defaultAspectRatio;
+
+        if (renderHeight > maxHeight) {
+          renderHeight = maxHeight;
+          renderWidth = maxHeight / defaultAspectRatio;
+        }
+
+        canvas.width = renderWidth;
+        canvas.height = renderHeight;
+        
         ctx.fillStyle = 'hsl(var(--muted))';
-        ctx.fillRect(0, 0, renderedWidth, renderedHeight);
-        drawMapElements(ctx, renderedWidth, renderedHeight);
+        ctx.fillRect(0, 0, renderWidth, renderHeight);
+        drawMapElements(ctx, renderWidth, renderHeight);
       };
       img.src = satelliteImage;
       return;
     }
   
     // If no satellite image
+    const defaultAspectRatio = 3/4;
+    let renderWidth = availableWidth;
+    let renderHeight = availableWidth * defaultAspectRatio;
+
+    if (renderHeight > maxHeight) {
+      renderHeight = maxHeight;
+      renderWidth = maxHeight / defaultAspectRatio;
+    }
+
+    canvas.width = renderWidth;
+    canvas.height = renderHeight;
+    
     ctx.fillStyle = 'hsl(var(--muted))';
-    ctx.fillRect(0, 0, renderedWidth, renderedHeight);
-    drawMapElements(ctx, renderedWidth, renderedHeight);
+    ctx.fillRect(0, 0, renderWidth, renderHeight);
+    drawMapElements(ctx, renderWidth, renderHeight);
   }, [mapData, satelliteImage]);
 
   return (
     <div className="w-full">
-      {/* Container with CSS handling all sizing and aspect ratio */}
-      <div className="w-full max-h-[600px] rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center p-4">
-        <canvas 
-          ref={canvasRef} 
-          className="max-w-full max-h-[600px] object-contain"
-        />
+      {/* Simple container with max height and centering */}
+      <div 
+        ref={containerRef}
+        className="w-full max-h-[600px] rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center p-4"
+      >
+        <canvas ref={canvasRef} />
       </div>
       
       {/* Legend */}
