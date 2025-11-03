@@ -1,4 +1,5 @@
 'use server';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 import type { CityParams, FullReport, MapData, Simulation, CityPlan } from '@/lib/types';
 import { generateCityPlan } from '@/ai/flows/generate-city-plan';
@@ -87,10 +88,58 @@ function generateMockFullReport(cityParams: CityParams): FullReport {
 }
 
 
-export async function analyzeImage(imageData: string, terrainAnalysis: string): Promise<string> {
-  // This function can be kept simple as it's the first step.
-  // We can return a mock summary for now to keep the flow.
-  return "AI analysis complete: The terrain is mostly flat with a slight elevation in the northwest. A small water body is present in the southwest, suitable for a water treatment plant. The soil is stable and suitable for high-rise construction.";
+export async function analyzeImage(base64Image: string, terrainAnalysis: string): Promise<string> {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Prepare the image for Gemini
+    const mimeMatch = base64Image.match(/^data:(image\/[a-zA-Z+]+);base64,/);
+    const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+    
+    // Strip the base64 header
+    const base64Data = base64Image.replace(/^data:image\/[a-zA-Z+]+;base64,/, "");
+    
+    const imagePart = {
+      inlineData: {
+        data: base64Data,
+        mimeType: mimeType,
+      },
+    };
+
+    const prompt = `You are an expert urban planner AI.
+    Analyze this aerial or satellite land image and describe the terrain features. 
+          
+    CRITICAL RULES:
+    - If this shows ANY geographical data (satellite map, height map, topographic map, terrain, elevation, contour lines, aerial photography) respond starting with EXACTLY: "AI analysis complete:"
+    - If this is NOT geographical data, respond with ONLY: "Error"
+    
+    TERRAIN ANALYSIS:
+    After "AI analysis complete:", provide detailed analysis of:
+    - Elevation patterns and slopes
+    - Water bodies and drainage
+    - Vegetation coverage
+    - Soil stability
+    - Construction suitability
+    - Specific directions (northwest, southeast, etc.)
+    - Specific features (hills, valleys, plains, etc.)
+    
+    Example: "AI analysis complete: The terrain is mostly flat with a slight elevation in the northwest. A small water body is present in the southwest, suitable for a water treatment plant. The soil appears stable and suitable for high-rise construction."
+    
+    Now analyze this image:`;
+
+    const result = await model.generateContent([prompt, imagePart]);
+    const text = result.response.text().trim();
+
+    // Simple safeguard if model returns something invalid
+    if (!text.toLowerCase().startsWith("ai analysis complete") && text !== "Error") {
+      return "Error";
+    }
+
+    return text;
+  } catch (err) {
+    console.error("Gemini terrain analysis error:", err);
+    return "Error";
+  }
 }
 
 
