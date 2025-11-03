@@ -113,6 +113,7 @@ export async function analyzeImage(base64Image: string, terrainAnalysis: string)
     CRITICAL RULES:
     - If this shows ANY geographical data (satellite map, height map, topographic map, terrain, elevation, contour lines, aerial photography) respond starting with EXACTLY: "AI analysis complete:"
     - If this is NOT geographical data, respond with ONLY: "Error"
+    - Scenery Images of any kind and landscape are invalid, respond with ONLY: "Error"
     
     TERRAIN ANALYSIS:
     After "AI analysis complete:", provide detailed analysis of:
