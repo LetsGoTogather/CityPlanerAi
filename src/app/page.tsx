@@ -75,6 +75,7 @@ const Page: FC = () => {
             title: "Invalid Image",
             description: "Please upload a valid terrain, satellite, or map image.",
           });
+          return;
         }
         setTerrainSummary(aiSummary);
         setStep(2);
