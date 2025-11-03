@@ -56,10 +56,9 @@ function getCenter(coordinates: number[][], width: number, height: number) {
 
 export function CityMap({ mapData, satelliteImage }: CityMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const drawMapElements = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    // Your existing drawing code remains exactly the same
+    // Draw zones
     mapData.zones?.forEach(zone => {
       const config = zoneConfig[zone.type];
       if (!config || !zone.coordinates || zone.coordinates.length < 2) return;
@@ -88,17 +87,54 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
       ctx.fillText(config.label, center.x, center.y);
     });
 
-    // Draw roads and infrastructure...
+    // Draw roads
+    mapData.roads?.forEach(road => {
+      const config = roadConfig[road.type];
+      if (!config || !road.coordinates) return;
+
+      ctx.strokeStyle = config.color;
+      ctx.lineWidth = config.width;
+      ctx.lineCap = 'round';
+      
+      ctx.beginPath();
+      road.coordinates.forEach((coord, index) => {
+        const x = (coord[0] / 100) * width;
+        const y = (coord[1] / 100) * height;
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    });
+
+    // Draw infrastructure
+    mapData.infrastructure?.forEach(infra => {
+        const config = infraConfig[infra.type] || infraConfig.default;
+        if (!config || !infra.coordinates) return;
+
+        const x = (infra.coordinates[0] / 100) * width;
+        const y = (infra.coordinates[1] / 100) * height;
+        
+        ctx.fillStyle = config.color;
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 10px Inter';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(config.icon, x, y);
+    });
   };
 
-useEffect(() => {
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!mapData || !canvas) return;
   
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Get the actual rendered size from CSS (browser handles aspect ratio)
+    // Get the actual rendered size from CSS
     const renderedWidth = canvas.clientWidth;
     const renderedHeight = canvas.clientHeight;
 
@@ -130,7 +166,7 @@ useEffect(() => {
 
   return (
     <div className="w-full">
-      {/* Simple container - CSS handles everything */}
+      {/* Container with CSS handling all sizing and aspect ratio */}
       <div className="w-full max-h-[600px] rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center p-4">
         <canvas 
           ref={canvasRef} 
@@ -140,7 +176,24 @@ useEffect(() => {
       
       {/* Legend */}
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 text-xs">
-        {/* ... your legend code */}
+        {Object.entries(zoneConfig).map(([key, { color, label }]) => (
+          <div key={key} className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color, opacity: 0.7 }} />
+            <span>{label}</span>
+          </div>
+        ))}
+        {Object.entries(roadConfig).map(([key, { color }]) => (
+            <div key={key} className="flex items-center gap-2">
+              <div className="w-4 h-1" style={{ backgroundColor: color }} />
+              <span className="capitalize">{key}</span>
+            </div>
+        ))}
+        {Object.entries(infraConfig).filter(([k]) => k !== 'default').map(([key, { color, icon }]) => (
+            <div key={key} className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full flex items-center justify-center text-white text-[8px]" style={{ backgroundColor: color }}>{icon}</div>
+                <span className="capitalize">{key.replace('_', ' ')}</span>
+            </div>
+        ))}
       </div>
     </div>
   );
