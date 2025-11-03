@@ -58,6 +58,7 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const drawMapElements = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    // Your existing drawing code remains the same
     // Draw zones
     mapData.zones?.forEach(zone => {
       const config = zoneConfig[zone.type];
@@ -74,7 +75,6 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
         if (index === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       });
-      // A closed polygon has the same start and end point. If not, close it.
       if(zone.coordinates[0].toString() !== zone.coordinates[zone.coordinates.length - 1].toString()){
         ctx.closePath();
       }
@@ -137,51 +137,78 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
   
     const container = canvas.parentElement;
     if (!container) return;
-  
-    const size = Math.min(container.clientWidth, 800);
+
+    // Get container dimensions with max height constraint
+    const maxHeight = Math.min(800, window.innerHeight * 0.7); // 800px or 70vh, whichever is smaller
+    const availableWidth = container.clientWidth;
+    const availableHeight = Math.min(container.clientHeight, maxHeight);
+
+    let canvasWidth = availableWidth;
+    let canvasHeight = availableHeight;
     let aspectRatio = 3 / 4; // default fallback
-  
+
     if (satelliteImage) {
       const img = new Image();
       img.onload = () => {
-        aspectRatio = img.height / img.width;
-        canvas.width = size;
-        canvas.height = size * aspectRatio;
-  
-        const width = canvas.width;
-        const height = canvas.height;
-  
-        ctx.clearRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-        drawMapElements(ctx, width, height);
+        // Calculate dimensions while maintaining aspect ratio
+        const imgAspectRatio = img.height / img.width;
+        aspectRatio = imgAspectRatio;
+        
+        // Fit within container while maintaining aspect ratio
+        if (canvasWidth * imgAspectRatio > canvasHeight) {
+          // Height is the limiting factor
+          canvasWidth = canvasHeight / imgAspectRatio;
+        } else {
+          // Width is the limiting factor
+          canvasHeight = canvasWidth * imgAspectRatio;
+        }
+
+        // Set canvas dimensions
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        // Clear and draw
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+        drawMapElements(ctx, canvasWidth, canvasHeight);
       };
       img.onerror = () => {
-        // fallback if image fails
-        canvas.width = size;
-        canvas.height = size * aspectRatio;
+        // Fallback if image fails - maintain aspect ratio
+        canvasWidth = Math.min(availableWidth, 800);
+        canvasHeight = canvasWidth * aspectRatio;
+        
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
         ctx.fillStyle = 'hsl(var(--muted))';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        drawMapElements(ctx, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        drawMapElements(ctx, canvasWidth, canvasHeight);
       };
       img.src = satelliteImage;
       return;
     }
   
-    // If no satellite image
-    canvas.width = size;
-    canvas.height = size * aspectRatio;
+    // If no satellite image - maintain aspect ratio
+    canvasWidth = Math.min(availableWidth, 800);
+    canvasHeight = canvasWidth * aspectRatio;
+    
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
     ctx.fillStyle = 'hsl(var(--muted))';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawMapElements(ctx, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    drawMapElements(ctx, canvasWidth, canvasHeight);
   }, [mapData, satelliteImage]);
-
-
 
   return (
     <div className="w-full">
-      <div className="relative h-full h-[800px] mx-auto">
-        <canvas ref={canvasRef} className="rounded-lg border bg-muted" />
+      {/* Container with max height and centered content */}
+      <div className="relative max-h-[800px] flex items-center justify-center p-4">
+        <canvas 
+          ref={canvasRef} 
+          className="rounded-lg border bg-muted max-w-full max-h-full"
+        />
       </div>
+      
+      {/* Legend remains the same */}
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 text-xs">
          {Object.entries(zoneConfig).map(([key, { color, label }]) => (
           <div key={key} className="flex items-center gap-2">
