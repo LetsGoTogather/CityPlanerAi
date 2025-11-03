@@ -99,8 +99,9 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const containerWidth = container.clientWidth;
-    const containerHeight = 600; // Fixed height
+    // Account for padding (p-4 = 16px on each side)
+    const containerWidth = container.clientWidth - 32; // 16px left + 16px right
+    const containerHeight = 600 - 32; // 16px top + 16px bottom
 
     if (satelliteImage) {
       const img = new Image();
@@ -121,24 +122,17 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
           renderWidth = containerHeight * imgAspectRatio;
         }
 
-        // Center the canvas within the container
-        const offsetX = (containerWidth - renderWidth) / 2;
-        const offsetY = (containerHeight - renderHeight) / 2;
-
-        // Set canvas size to match rendered image size
-        canvas.style.width = `${renderWidth}px`;
-        canvas.style.height = `${renderHeight}px`;
+        // Set canvas internal resolution (for drawing)
         canvas.width = renderWidth;
         canvas.height = renderHeight;
 
+        // Clear and draw
         ctx.clearRect(0, 0, renderWidth, renderHeight);
         ctx.drawImage(img, 0, 0, renderWidth, renderHeight);
         drawMapElements(ctx, renderWidth, renderHeight);
       };
       img.onerror = () => {
         // Fallback - use full container with default aspect ratio
-        canvas.style.width = `${containerWidth}px`;
-        canvas.style.height = `${containerHeight}px`;
         canvas.width = containerWidth;
         canvas.height = containerHeight;
         
@@ -151,8 +145,6 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
     }
   
     // If no satellite image
-    canvas.style.width = `${containerWidth}px`;
-    canvas.style.height = `${containerHeight}px`;
     canvas.width = containerWidth;
     canvas.height = containerHeight;
     
@@ -163,17 +155,37 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
 
   return (
     <div className="w-full">
-      {/* Container with fixed height and centering */}
+      {/* Container with fixed height, centering, and padding */}
       <div 
         ref={containerRef}
         className="w-full h-[600px] rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center p-4"
       >
-        <canvas ref={canvasRef} />
+        <canvas 
+          ref={canvasRef} 
+          className="max-w-full max-h-full" // Let CSS handle the display sizing
+        />
       </div>
       
       {/* Legend remains the same */}
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 text-xs">
-        {/* Your legend code */}
+        {Object.entries(zoneConfig).map(([key, { color, label }]) => (
+          <div key={key} className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color, opacity: 0.7 }} />
+            <span>{label}</span>
+          </div>
+        ))}
+        {Object.entries(roadConfig).map(([key, { color }]) => (
+            <div key={key} className="flex items-center gap-2">
+              <div className="w-4 h-1" style={{ backgroundColor: color }} />
+              <span className="capitalize">{key}</span>
+            </div>
+        ))}
+         {Object.entries(infraConfig).filter(([k]) => k !== 'default').map(([key, { color, icon }]) => (
+             <div key={key} className="flex items-center gap-2">
+                 <div className="w-3 h-3 rounded-full flex items-center justify-center text-white text-[8px]" style={{ backgroundColor: color }}>{icon}</div>
+                 <span className="capitalize">{key.replace('_', ' ')}</span>
+             </div>
+         ))}
       </div>
     </div>
   );
