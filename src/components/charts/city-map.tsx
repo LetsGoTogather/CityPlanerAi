@@ -136,9 +136,9 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Available space accounting for padding (p-4 = 16px each side)
-    const availableWidth = container.clientWidth;
-    const maxHeight = 600;
+    // Account for padding (p-4 = 16px on each side)
+    const availableWidth = container.clientWidth - 32; // 16px left + 16px right
+    const availableHeight = 600 - 32; // 16px top + 16px bottom
 
     if (satelliteImage) {
       const img = new Image();
@@ -148,10 +148,10 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
         let renderWidth = availableWidth;
         let renderHeight = availableWidth * imgAspectRatio;
 
-        // If calculated height exceeds max, scale down
-        if (renderHeight > maxHeight) {
-          renderHeight = maxHeight;
-          renderWidth = maxHeight / imgAspectRatio;
+        // If calculated height exceeds available height, scale down
+        if (renderHeight > availableHeight) {
+          renderHeight = availableHeight;
+          renderWidth = availableHeight / imgAspectRatio;
         }
 
         // Set canvas size
@@ -169,9 +169,9 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
         let renderWidth = availableWidth;
         let renderHeight = availableWidth * defaultAspectRatio;
 
-        if (renderHeight > maxHeight) {
-          renderHeight = maxHeight;
-          renderWidth = maxHeight / defaultAspectRatio;
+        if (renderHeight > availableHeight) {
+          renderHeight = availableHeight;
+          renderWidth = availableHeight / defaultAspectRatio;
         }
 
         canvas.width = renderWidth;
@@ -190,9 +190,9 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
     let renderWidth = availableWidth;
     let renderHeight = availableWidth * defaultAspectRatio;
 
-    if (renderHeight > maxHeight) {
-      renderHeight = maxHeight;
-      renderWidth = maxHeight / defaultAspectRatio;
+    if (renderHeight > availableHeight) {
+      renderHeight = availableHeight;
+      renderWidth = availableHeight / defaultAspectRatio;
     }
 
     canvas.width = renderWidth;
@@ -205,7 +205,7 @@ export function CityMap({ mapData, satelliteImage }: CityMapProps) {
 
   return (
     <div className="w-full">
-      {/* Simple container with max height and centering */}
+      {/* Container with max height and centering */}
       <div 
         ref={containerRef}
         className="w-full max-h-[600px] rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center p-4"
