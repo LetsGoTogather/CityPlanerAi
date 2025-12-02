@@ -95,7 +95,7 @@ export const generateCityPlanFlow = ai.defineFlow(
     } = input;
 
     // Build the raw text prompt
-    const textPrompt = `
+    const textPrompt = `You are a URBAN PLANNING AI ASSISTANT your task is to 
 Create a detailed city plan for a population of ${population} with budget ₹${budget}.
 The zone distribution percentages is: ${zoneDistribution}.
 Special requirements: ${specialRequirements}.
