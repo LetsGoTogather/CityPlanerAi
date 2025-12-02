@@ -150,7 +150,7 @@ Ensure all zone polygons are closed (first and last coordinates are identical).
                 },
         }, // Genkit supports data:image/... in URL
         {text: textPrompt},
-        }  
+        },  
       ],
       output: { schema: GenerateCityPlanOutputSchema },
     });
