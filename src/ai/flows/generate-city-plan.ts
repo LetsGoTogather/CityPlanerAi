@@ -9,9 +9,32 @@
 
 import { ai } from '@/ai/genkit';
 import { GenerateCityPlanInputSchema, GenerateCityPlanOutputSchema, type GenerateCityPlanInput, type GenerateCityPlanOutput } from '@/ai/schemas';
+import { imageFromBuffer } from "@genkit-ai/media";
 
-export async function generateCityPlan(input: GenerateCityPlanInput): Promise<GenerateCityPlanOutput> {
-  return generateCityPlanFlow(input);
+function base64ToBytes(data: string): Uint8Array {
+  const cleaned = data.replace(/^data:image\/[a-zA-Z+]+;base64,/, "");
+  return Uint8Array.from(Buffer.from(cleaned, "base64"));
+}
+
+export async function generateCityPlan(
+  base64Image: string,
+  input: GenerateCityPlanInput
+): Promise<GenerateCityPlanOutput> {
+
+  let mediaArray = [];
+
+  if (base64Image) {
+    const bytes = base64ToBytes(base64Image);
+
+    const img = await imageFromBuffer(bytes, {
+      mimeType: "image/png", // or detect dynamically
+    });
+
+    mediaArray.push(img);
+  }
+
+  // Now call the flow with media attached
+  return generateCityPlanFlow(input, { media: mediaArray });
 }
 
 const prompt = ai.definePrompt({
@@ -69,22 +92,33 @@ const prompt = ai.definePrompt({
 
 const generateCityPlanFlow = ai.defineFlow(
   {
-    name: 'generateCityPlanFlow',
+    name: "generateCityPlanFlow",
     inputSchema: GenerateCityPlanInputSchema,
     outputSchema: GenerateCityPlanOutputSchema,
+    media: true, // 🔥 enables media support in this flow
   },
-  async (input) => {
-    const { output, usage } = await prompt(input);
-    
-    // Instead of throwing an error, we just return the (potentially incomplete) output.
-    // The frontend action will handle validation.
+  async (input, { media }) => {
+    // Build the prompt text exactly like before
+    const builtPrompt = prompt.build(input);
+
+    // Run Gemini with prompt + media
+    const { output, usage } = await gemini25Flash.generate({
+      prompt: builtPrompt,
+      media: media && media.length > 0 ? media : undefined,
+    });
+
+    // Logging & fallback behavior (your original code)
     if (!output) {
-      console.error('AI response was null or undefined.');
-      console.error('Token usage:', usage);
+      console.error("AI response was null or undefined.");
+      console.error("Token usage:", usage);
     } else if (!output.mapData || !output.report) {
-      console.warn('AI response is missing mapData or report.', JSON.stringify(output, null, 2));
+      console.warn(
+        "AI response is missing mapData or report.",
+        JSON.stringify(output, null, 2)
+      );
     }
 
     return output!;
   }
 );
+
