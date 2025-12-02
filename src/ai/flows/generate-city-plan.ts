@@ -97,12 +97,28 @@ export const generateCityPlanFlow = ai.defineFlow(
     // Build the raw text prompt
     const textPrompt = `
 Create a detailed city plan for a population of ${population} with budget ₹${budget}.
-The zone distribution is: ${zoneDistribution}.
+The zone distribution percentages is: ${zoneDistribution}.
 Special requirements: ${specialRequirements}.
 The terrain analysis is: ${terrainAnalysis}.
 
-Return ONLY pure JSON in this EXACT format, without any other text or markdown.
-Ensure all zone polygons are closed (first and last coordinates are identical).
+## The Assistant shall use the attached photo as a height map of the a region and make his report according to it
+
+## CRITICAL PRINCIPLES:
+- **Return ONLY pure JSON** - no markdown, no explanations, no additional text
+- **STRICT ADHERENCE** to the exact JSON schema below
+- **ALL polygons MUST be closed** (first coordinate = last coordinate)
+- You MAY create polygon-shaped zones with ANY number of edges (minimum 3) and Polygons can be irregular to fit the landscape and maximize the area. Each zone must be a CLOSED polygon (first and last coordinates identical). Zone shapes should follow natural contours from the terrain image
+- You must follow the Zone Distribution Percentages covering the whole area of the map is not required and must not be forced(ie the persentages are only applicable for the area which comes under the slope limitation rest area is left vacant) but the ratios must be preserved error in this shall come under 10%
+- DO NOT place zones or infrastructure on slopes >15% gradient (use image height data)
+- Place residential zones on flat, stable terrain
+
+## SUGGESTIONS  
+- Hospitals: Centrally located with emergency access routes
+- Schools/Parks: Distributed evenly in residential zones
+- Highways: Connect major zones with gentle gradients (<6%)
+- Roads should follow contour lines to minimize excavation
+- Preserve natural drainage and Minimize cut-and-fill earthworks
+
 
 {
   "mapData": {
