@@ -179,7 +179,7 @@ export async function generatePlanAndSimulate(
   console.log("tarrainsummary done");
   const zoneDistribution = await optimizeZoneDistribution({ terrainAnalysis: terrainSummary.summary, population, budget });
   console.log("zonedistribution");
-  const cityPlan = await generateCityPlan(base64Image: imageData, input: { population, budget,
+  const cityPlan = await generateCityPlan(imageData,{ population, budget,
                                            zoneDistribution: JSON.stringify(zoneDistribution.zoneDistribution || zoneDistribution), 
                                            terrainAnalysis: terrainSummary.summary,
                                            specialRequirements: JSON.stringify(specialRequirements)});
