@@ -20,22 +20,9 @@ export async function generateCityPlan(
   base64Image: string,
   input: GenerateCityPlanInput
 ): Promise<GenerateCityPlanOutput> {
-
-  let mediaArray = [];
-
-  if (base64Image) {
-    const bytes = base64ToBytes(base64Image);
-
-    const img = await imageFromBuffer(bytes, {
-      mimeType: "image/png", // or detect dynamically
-    });
-
-    mediaArray.push(img);
-  }
-
-  // Now call the flow with media attached
-  return generateCityPlanFlow(input, { media: mediaArray });
+  return generateCityPlanFlow({ base64Image, ...input });
 }
+
 
 const prompt = ai.definePrompt({
   name: 'generateCityPlanPrompt',
@@ -90,35 +77,50 @@ const prompt = ai.definePrompt({
     `,
 });
 
-const generateCityPlanFlow = ai.defineFlow(
+export const generateCityPlanFlow = ai.defineFlow(
   {
     name: "generateCityPlanFlow",
     inputSchema: GenerateCityPlanInputSchema,
     outputSchema: GenerateCityPlanOutputSchema,
-    media: true, // 🔥 enables media support in this flow
   },
-  async (input, { media }) => {
-    // Build the prompt text exactly like before
-    const builtPrompt = prompt.build(input);
 
-    // Run Gemini with prompt + media
-    const { output, usage } = await gemini25Flash.generate({
-      prompt: builtPrompt,
-      media: media && media.length > 0 ? media : undefined,
+  async (input) => {
+    const { base64Image, ...rest } = input;
+
+    const parts: any[] = [];
+
+    // If the user sent an image, attach it
+    if (base64Image) {
+      const mimeMatch = base64Image.match(/^data:(image\/[a-zA-Z+]+);base64,/);
+      const mimeType = mimeMatch ? mimeMatch[1] : "image/png";
+
+      const base64Data = base64Image.replace(
+        /^data:image\/[a-zA-Z+]+;base64,/,
+        ""
+      );
+
+      parts.push({
+        inlineData: {
+          mimeType,
+          data: base64Data,
+        },
+      });
+    }
+
+    // Add prompt content
+    parts.push({
+      text: JSON.stringify(rest, null, 2),
     });
 
-    // Logging & fallback behavior (your original code)
+    const { output, usage } = await ai.generateMessage({
+      input: parts,
+      output: { schema: GenerateCityPlanOutputSchema },
+    });
+
     if (!output) {
-      console.error("AI response was null or undefined.");
-      console.error("Token usage:", usage);
-    } else if (!output.mapData || !output.report) {
-      console.warn(
-        "AI response is missing mapData or report.",
-        JSON.stringify(output, null, 2)
-      );
+      console.error("AI returned no output", usage);
     }
 
     return output!;
   }
 );
-
