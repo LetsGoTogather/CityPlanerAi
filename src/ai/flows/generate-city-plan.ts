@@ -103,6 +103,8 @@ The terrain analysis is: ${terrainAnalysis}.
 
 ## The Assistant shall use the attached photo as a height map of the a region and make his report according to it
 
+### Only Override if in case the ai is unable to cover atleat 70% of the area due to restrictions it may override them to attain 70% required
+
 ## CRITICAL PRINCIPLES:
 - **Return ONLY pure JSON** - no markdown, no explanations, no additional text
 - **STRICT ADHERENCE** to the exact JSON schema below
