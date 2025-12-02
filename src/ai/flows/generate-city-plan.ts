@@ -85,53 +85,50 @@ export const generateCityPlanFlow = ai.defineFlow(
     outputSchema: GenerateCityPlanOutputSchema,
   },
   async (input) => {
-    console.log("here")
     const { base64Image, ...rest } = input;
-    console.log(rest);
 
-    // Build input messages for the AI
-    const aiInput: any[] = [];
+    const mimeType =
+      base64Image?.match(/^data:(image\/[a-zA-Z+]+);base64,/)?.[1] ??
+      "image/jpeg";
 
-    // 1️⃣ Always include the prompt with structured input
-    aiInput.push({
-      prompt,        // The defined ai.definePrompt
-      input: rest,   // Spread all remaining input fields
-    });
-    console.log(aiInput);
+    const base64Data = base64Image?.replace(
+      /^data:image\/[a-zA-Z+]+;base64,/,
+      ""
+    );
 
-    // 2️⃣ Include image as inlineData if provided
-    if (base64Image) {
-      const mimeMatch = base64Image.match(/^data:(image\/[a-zA-Z+]+);base64,/);
-      const mimeType = mimeMatch ? mimeMatch[1] : "image/png";
-
-      const base64Data = base64Image.replace(/^data:image\/[a-zA-Z+]+;base64,/, "");
-
-      aiInput.push({
-        inlineData: {
-          mimeType,
-          data: base64Data,
+    try {
+      const { output, usage } = await ai.generate({
+        prompt,
+        input: {
+          ...rest,
+          image: base64Data
+            ? {
+                mimeType,
+                data: base64Data,
+              }
+            : undefined,
         },
+        output: { schema: GenerateCityPlanOutputSchema },
       });
+
+      if (!output) {
+        console.error("AI returned no output", usage);
+        throw new Error("AI returned no output");
+      }
+
+      if (!output.mapData || !output.report) {
+        console.warn(
+          "AI response missing mapData or report.",
+          JSON.stringify(output, null, 2),
+          "usage:",
+          usage
+        );
+      }
+
+      return output!;
+    } catch (err) {
+      console.error("generateCityPlanFlow error:", err);
+      throw err;
     }
-    console.log(aiInput)
-
-    // 3️⃣ Generate the output using AI
-    const { output, usage } = await ai.generate({
-      input: aiInput,
-      output: { schema: GenerateCityPlanOutputSchema },
-    });
-
-    // 4️⃣ Log errors or missing fields for debugging
-    if (!output) {
-      console.error("AI returned no output", usage);
-      throw new Error("AI returned no output");
-    } else if (!output.mapData || !output.report) {
-      console.warn(
-        "AI response is missing mapData or report.",
-        JSON.stringify(output, null, 2)
-      );
-    }
-
-    return output!;
   }
 );
