@@ -83,23 +83,26 @@ export const generateCityPlanFlow = ai.defineFlow(
     inputSchema: GenerateCityPlanInputSchema,
     outputSchema: GenerateCityPlanOutputSchema,
   },
-
   async (input) => {
     const { base64Image, ...rest } = input;
 
-    const parts: any[] = [];
+    // Build input messages for the AI
+    const aiInput: any[] = [];
 
-    // If the user sent an image, attach it
+    // 1️⃣ Always include the prompt with structured input
+    aiInput.push({
+      prompt,        // The defined ai.definePrompt
+      input: rest,   // Spread all remaining input fields
+    });
+
+    // 2️⃣ Include image as inlineData if provided
     if (base64Image) {
       const mimeMatch = base64Image.match(/^data:(image\/[a-zA-Z+]+);base64,/);
       const mimeType = mimeMatch ? mimeMatch[1] : "image/png";
 
-      const base64Data = base64Image.replace(
-        /^data:image\/[a-zA-Z+]+;base64,/,
-        ""
-      );
+      const base64Data = base64Image.replace(/^data:image\/[a-zA-Z+]+;base64,/, "");
 
-      parts.push({
+      aiInput.push({
         inlineData: {
           mimeType,
           data: base64Data,
@@ -107,18 +110,21 @@ export const generateCityPlanFlow = ai.defineFlow(
       });
     }
 
-    // Add prompt content
-    parts.push({
-      text: JSON.stringify(rest, null, 2),
-    });
-
+    // 3️⃣ Generate the output using AI
     const { output, usage } = await ai.generate({
-      input: parts,
+      input: aiInput,
       output: { schema: GenerateCityPlanOutputSchema },
     });
 
+    // 4️⃣ Log errors or missing fields for debugging
     if (!output) {
       console.error("AI returned no output", usage);
+      throw new Error("AI returned no output");
+    } else if (!output.mapData || !output.report) {
+      console.warn(
+        "AI response is missing mapData or report.",
+        JSON.stringify(output, null, 2)
+      );
     }
 
     return output!;
