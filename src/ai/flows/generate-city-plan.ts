@@ -112,7 +112,7 @@ export const generateCityPlanFlow = ai.defineFlow(
       text: JSON.stringify(rest, null, 2),
     });
 
-    const { output, usage } = await ai.generateMessage({
+    const { output, usage } = await ai.generate({
       input: parts,
       output: { schema: GenerateCityPlanOutputSchema },
     });
