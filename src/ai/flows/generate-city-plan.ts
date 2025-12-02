@@ -85,7 +85,7 @@ export const generateCityPlanFlow = ai.defineFlow(
     outputSchema: GenerateCityPlanOutputSchema,
   },
   async (input) => {
-    const { base64Image, rest } = input;
+    const { base64Image: base64Image, input: rest } = input;
 
     // Build input messages for the AI
     const aiInput: any[] = [];
