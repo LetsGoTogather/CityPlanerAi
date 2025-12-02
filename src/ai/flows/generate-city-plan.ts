@@ -87,7 +87,7 @@ export const generateCityPlanFlow = ai.defineFlow(
   async (input) => {
     console.log("here")
     const { base64Image, ...rest } = input;
-    console.log(rest)
+    console.log(rest);
 
     // Build input messages for the AI
     const aiInput: any[] = [];
@@ -97,6 +97,7 @@ export const generateCityPlanFlow = ai.defineFlow(
       prompt,        // The defined ai.definePrompt
       input: rest,   // Spread all remaining input fields
     });
+    console.log(aiInput);
 
     // 2️⃣ Include image as inlineData if provided
     if (base64Image) {
@@ -112,6 +113,7 @@ export const generateCityPlanFlow = ai.defineFlow(
         },
       });
     }
+    console.log(aiInput)
 
     // 3️⃣ Generate the output using AI
     const { output, usage } = await ai.generate({
