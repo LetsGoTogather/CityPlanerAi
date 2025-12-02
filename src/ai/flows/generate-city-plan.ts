@@ -145,7 +145,7 @@ Ensure all zone polygons are closed (first and last coordinates are identical).
 
     // Call AI
     const { output, usage } = await ai.generate({
-      input:[
+      prompt:[
         {media: { url: base64Image,
                 },
         }, // Genkit supports data:image/... in URL
