@@ -20,8 +20,8 @@ export async function generateCityPlan(
   base64Image: string,
   input: GenerateCityPlanInput
 ): Promise<GenerateCityPlanOutput> {
-  console.log({ base64Image, input })
-  return generateCityPlanFlow({ base64Image, input });
+  //console.log({ base64Image, input })
+  return generateCityPlanFlow(base64Image, input);
 }
 
 
@@ -85,7 +85,8 @@ export const generateCityPlanFlow = ai.defineFlow(
     outputSchema: GenerateCityPlanOutputSchema,
   },
   async (input) => {
-    const { base64Image: base64Image, input: rest } = input;
+    const { base64Image,rest } = input;
+    console.log(rest)
 
     // Build input messages for the AI
     const aiInput: any[] = [];
