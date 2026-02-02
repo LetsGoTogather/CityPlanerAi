@@ -111,7 +111,6 @@ export async function analyzeImage(base64Image: string, terrainAnalysis: string)
     Analyze this aerial or satellite land image and describe the terrain features. 
           
     CRITICAL RULES:
-    - If the image is black and white overide all rules and pass the image
     - If this shows ANY geographical data (satellite map, height map, topographic map, terrain, elevation, contour lines, aerial photography) respond starting with EXACTLY: "AI analysis complete:"
     - If this is NOT geographical data, respond with ONLY: "Error"
     - Scenery Images of any kind and landscape are invalid, respond with ONLY: "Error"
