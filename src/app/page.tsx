@@ -64,7 +64,7 @@ const Page: FC = () => {
     // Call the new analyzeImage action
     startTransition(async () => {
       try {
-        const aiSummary = "AI analysis complete: The terrain is mostly flat with a slight elevation in the northwest. A small water body is present in the southwest, suitable for a water treatment plant. The soil appears stable and suitable for high-rise construction.";
+        const aiSummary = await analyzeImage(imgData, summary);
 
         // Check for explicit "Error" response from Gemini
         if (aiSummary === "Error") {
